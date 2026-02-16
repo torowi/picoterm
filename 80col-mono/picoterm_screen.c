@@ -8,14 +8,18 @@
 #include "../common/pmhid.h" // keyboard definitions
 #include "../common/picoterm_config.h"
 #include "../common/picoterm_stddef.h"
+#include "../common/picoterm_harddef.h"
+#include "../common/picoterm_stdio.h"
 #include "picoterm_core.h" // handle_new_character
 #include "tusb_option.h"
 #include "picoterm_conio.h"
 #include "main.h" // UART_ID
 #include "hardware/watchdog.h"
 #include <stdio.h>
-
+#include "../cli/cli.h"
 #include "../common/picoterm_debug.h"
+
+
 
 /* Picoterm_i2c.c */
 extern bool i2c_bus_available; // gp26 & gp27 are used as I2C (otherwise as simple GPIO)
@@ -41,6 +45,37 @@ char handle_default_input(){
   return _ch;
 }
 
+/* --- COMMAND Interpreter ----------------------------------------------------
+   -
+   ---------------------------------------------------------------------------*/
+
+ void display_command(){
+   clrscr();
+   move_cursor_home();
+
+	 print_string( "---- Picoterm command interpreter ----\r\nUse: exit, list, <command> ?, <command> -h\r\n" );
+}
+
+
+char handle_command_input(){
+  // Ask user to enter command followed by RETURN key then execute it!
+  //
+	char _cmd[80];
+	while (strcmp( _cmd, "exit") != 0) {
+		print_string( "\r\n$ " );
+		cursor_visible( true );
+		get_string( _cmd, sizeof(_cmd) );
+		cursor_visible( false );
+		debug_print( "Invoke cli to execute:");
+		debug_print( _cmd );
+		print_string( "\r\n" );
+		cli_execute( _cmd, sizeof(_cmd) );
+	}
+
+	// Inform callee to close the screen
+	cursor_visible( true );
+	return ESC;
+}
 /* --- CHARSET ----------------------------------------------------------------
    -
    ---------------------------------------------------------------------------*/
@@ -115,7 +150,9 @@ void display_config(){
     sprintf(msg, "\x0E0  %sm ANSI Graphic (8bits)     \x0C2             \x0E0\r\n", (config.font_id > FONT_ASCII)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
-    sprintf(msg, "\x0E0  %sp NupetSCII   %sq CP437                   \x0E0\r\n", (config.graph_id==FONT_NUPETSCII)?"\x0D1":" ", (config.graph_id==FONT_CP437)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %sp NupetSCII Mono8    %sq CP437 Mono8      \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_MONO8)?"\x0D1":" ", (config.graph_id==FONT_CP437_MONO8)?"\x0D1":" " );
+    print_nupet(msg, config.font_id );
+		sprintf(msg, "\x0E0  %sr NupetSCII OlivettiT%ss CP437 OlivettiT  \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_OLIVETTITHIN)?"\x0D1":" ", (config.graph_id==FONT_CP437_OLIVETTITHIN)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E5\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E7\r\n", config.font_id );
     print_string("\r\n(S upcase=save / ESC=close) ? ");
@@ -236,7 +273,7 @@ char handle_config_input(){
         config.font_id = FONT_ASCII; // normal font
         break;
       case 'm':
-        config.font_id = config.graph_id; //FONT_NUPETSCII;
+        config.font_id = config.graph_id; //Graphical font (FONT_NUPETSCII_MONO8);
         break;
     }
     select_graphic_font( config.font_id );
@@ -244,13 +281,19 @@ char handle_config_input(){
     conio_config.cursor.symbol = get_cursor_char( config.font_id, CURSOR_TYPE_DEFAULT ) - 0x20;
   }
   // Select the Graphical font to be used
-  if ( ( _ch >= 'p') && (_ch <= 'q') ) {
+  if ( ( _ch >= 'p') && (_ch <= 's') ) {
     switch( _ch ){
       case 'p':
-        config.graph_id = FONT_NUPETSCII;
+        config.graph_id = FONT_NUPETSCII_MONO8;
         break;
       case 'q':
-        config.graph_id = FONT_CP437;
+        config.graph_id = FONT_CP437_MONO8;
+        break;
+      case 'r':
+        config.graph_id = FONT_NUPETSCII_OLIVETTITHIN;
+        break;
+      case 's':
+        config.graph_id = FONT_CP437_OLIVETTITHIN;
         break;
     }
     if( config.font_id != FONT_ASCII ) {
@@ -280,6 +323,7 @@ void display_help(){
   move_cursor_home(); // csr.x = 0; csr.y = 0;
   print_nupet("\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6 PicoTerm Help \x0A6\x0A6\r\n", config.font_id );
   print_nupet("\x0B0\x0C3 Keyboard Shortcut \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0AE\r\n", config.font_id );
+	print_nupet("\x0C2 \x083 Shift+Ctrl+C : Command Line Interface        \x0C2\r\n", config.font_id ); // strip Nupetscii when not activated
   print_nupet("\x0C2 \x083 Shift+Ctrl+H : Help screen                   \x0C2\r\n", config.font_id ); // strip Nupetscii when not activated
   print_nupet("\x0C2 \x083 Shift+Ctrl+L : Toggle ASCII/ANSI charset     \x0C2\r\n", config.font_id );
   print_nupet("\x0C2 \x083 Shift+Ctrl+M : Configuration menu            \x0C2\r\n", config.font_id );
@@ -314,8 +358,8 @@ void display_terminal(){
     print_string(msg);
     sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
     print_string(msg);
-		sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
-		print_string(msg);
+    sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
+    print_string(msg);
     char _parity = '?';
     switch(config.parity){
       case UART_PARITY_NONE:

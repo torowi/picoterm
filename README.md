@@ -100,6 +100,9 @@ The "RP2040 VGA Terminal" offers:
 | Escape sequence             | Description                                              | [Test name](test-suite/readme.md)  |
 |-----------------------------|----------------------------------------------------------|--------------------|
 | \ESC[?2l	| Enter VT52 mode                                                            | cursor_move_vt52   |
+| \ESC[?61l | Enter Televideo (TVI) mode                                               |                    |
+| \ESC[?61h | Leave Televideo mode and return to VT100                                 |                    |
+
 | \ESC[?7l	| Wraparound OFF                                                             | no_wrap            |
 | \ESC[?7h	| Wraparound ON                                                              | do_wrap            |
 | \ESC[?12l	| Text Cursor Disable Blinking (but still visible)                           | cursor_blink       |
@@ -177,6 +180,28 @@ VT52 escape are not available in VT100 mode. Switch to VT52 mode to use them.
 | \ESC<	      | Enter vt100 mode                                                         | cursor_move_vt52   |
 | \ESCZ	      | Identify/return Terminal ID (DECID is 0x9a). (vt52, not vt100) **defect**| term_id_vt52       |
 | \ESC[Z	    | Identify/return Terminal ID (DECID is 0x9a). (vt52, not vt100)           | term_id2_vt52      |
+
+
+## Televideo (TVI) sequences
+
+TVI mode can be enabled with `\ESC[?61l` and left with `\ESC[?61h` (or `\ESC<`).
+
+In the **PicoTerm configuration menu** (Shift+Ctrl+M), use:
+- `t` for VT100/VT52 mode
+- `u` for Televideo (TVI) mode
+
+| Escape sequence             | Description                                              |
+|-----------------------------|----------------------------------------------------------|
+| \ESCA       | Move the cursor up 1 line (TVI mode)                                      |
+| \ESCB       | Move the cursor down 1 line (TVI mode)                                    |
+| \ESCC       | Move the cursor right 1 col (TVI mode)                                    |
+| \ESCD       | Move the cursor left 1 col (TVI mode)                                     |
+| \ESCH       | Move to 0-0 (TVI mode)                                                     |
+| \ESCJ       | Clear from cursor to end of screen (TVI mode)                             |
+| \ESCK       | Clear from cursor to end of line (TVI mode)                               |
+| \ESC*       | Clear screen and move cursor home (TVI mode)                              |
+| \ESC=rc     | Direct cursor addressing. `r` and `c` are row/column bytes encoded as value+31. |
+| \ESC<       | Leave TVI mode and return to VT100                                        |
 
 
 ## DEC Line Drawing

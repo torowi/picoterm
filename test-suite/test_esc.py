@@ -527,6 +527,32 @@ def test_home_vt52( ser ):
 	ser.write_str("\ESCH") # go Home
 	ser.write_str("\ESC<") # enter vt100 mode
 
+
+def test_cursor_move_tvi( ser ):
+	""" tvi: Enter Televideo mode, move cursor around with single-char commands, then return to VT100. """
+	test_clear(ser)
+	ser.write_str("\ESC[10;10H") # Line 10, Col 10
+	ser.write_str("X")
+	ser.write_str("\ESC[?61l") # enter TVI mode
+	ser.write_str("\ESCA\ESCA") # up
+	time.sleep(1)
+	ser.write_str("\ESCC\ESCC") # right
+	time.sleep(1)
+	ser.write_str("\ESCB\ESCB") # down
+	time.sleep(1)
+	ser.write_str("\ESCD\ESCD") # left
+	time.sleep(1)
+	ser.write_str("\ESC[?61h") # return to VT100 mode
+
+
+def test_cursor_move_tvi_direct( ser ):
+	""" tvi: Enter Televideo mode and position cursor with ESC=rc addressing. """
+	test_clear(ser)
+	ser.write_str("\ESC[?61l") # enter TVI mode
+	ser.write_str("\ESC=" + chr(31+10) + chr(31+20)) # row 10, col 20
+	ser.write_str("TVI@10,20")
+	ser.write_str("\ESC<") # return to VT100 mode
+
 def test_cursor_at_line( ser ):
 	""" Send Lorem Ipsum, place cursor to 3th line & 5th char, move at absolute line 10. Cursor still at 5th char."""
 	test_clear(ser)

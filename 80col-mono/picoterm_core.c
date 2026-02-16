@@ -36,6 +36,8 @@
 #define ESC_READY               0
 #define ESC_ESC_RECEIVED        1
 #define ESC_PARAMETER_READY     2
+#define ESC_TVI_ROW             3
+#define ESC_TVI_COLUMN          4
 
 #define MAX_ESC_PARAMS          5
 static int esc_state = ESC_READY;
@@ -48,10 +50,10 @@ static unsigned char esc_c1;
 static unsigned char esc_final_byte;
 
 
-#define VT100   1
-#define VT52    2
-#define BOTH    3
-int mode = VT100;
+#define BOTH    4
+static int mode = TERMINAL_MODE_VT100;
+
+static unsigned char tvi_row;
 
 
 /* picoterm_config.c */
@@ -102,7 +104,7 @@ void terminal_reset(){
     move_cursor_home();
     reset_saved_cursor();
 
-    mode = VT100;
+    mode = TERMINAL_MODE_VT100;
     insert_mode = false;
 
     conio_reset( get_cursor_char( config.font_id, CURSOR_TYPE_DEFAULT ) - 0x20 );
@@ -114,6 +116,18 @@ void terminal_reset(){
 char get_bell_state() { return bell_state; }
 void set_bell_state(char state) { bell_state = state; }
 
+
+int get_terminal_mode(){ return mode; }
+
+void set_terminal_mode(int new_mode){
+    if(new_mode==TERMINAL_MODE_TVI)
+        mode = TERMINAL_MODE_TVI;
+    else if(new_mode==TERMINAL_MODE_VT52)
+        mode = TERMINAL_MODE_VT52;
+    else
+        mode = TERMINAL_MODE_VT100;
+    reset_escape_sequence();
+}
 
 // for debugging purposes only
 void print_ascii_value(unsigned char asc){
@@ -147,7 +161,22 @@ void esc_sequence_received(){
 */
 
   int n,m;
-  if(mode==VT100){
+  if(esc_c1=='[' && parameter_q && esc_parameters[0]==61){
+      if(esc_final_byte=='h'){
+          // ESC[?61h -> VT family mode (VT100 default)
+          mode = TERMINAL_MODE_VT100;
+          reset_escape_sequence();
+          return;
+      }
+      else if(esc_final_byte=='l'){
+          // ESC[?61l -> Televideo mode
+          mode = TERMINAL_MODE_TVI;
+          reset_escape_sequence();
+          return;
+      }
+  }
+
+  if(mode==TERMINAL_MODE_VT100){
       //ESC H           Set tab at current column
       //ESC [ g         Clear tab at current column
       //ESC [ 0g        Same
@@ -298,7 +327,7 @@ void esc_sequence_received(){
                   }
                   else if(esc_parameters[0]==2){
                       //Set VT52 (versus ANSI)
-                      mode = VT52;
+                      mode = TERMINAL_MODE_VT52;
                   }
                   else if(esc_parameters[0]==7){
                       //Auto-wrap mode off ESC [?7l
@@ -531,7 +560,7 @@ void esc_sequence_received(){
           // ignore everything else
       }
   }
-  else if(mode==VT52){ // VT52
+  else if(mode==TERMINAL_MODE_VT52){ // VT52
       // \033[^^  VT52
       // \033[Z   VT52
       if(esc_c1=='['){
@@ -545,6 +574,11 @@ void esc_sequence_received(){
       else{
           // ignore everything else
       }
+  }
+  else if(mode==TERMINAL_MODE_TVI){
+      // Televideo command set mostly relies on ESC + one-byte command.
+      // Parameterized CSI sequences are intentionally ignored in TVI mode,
+      // except mode switch control handled above.
   }
 
   // Both VT52 & VT100
@@ -621,7 +655,7 @@ void handle_new_character(unsigned char asc){
               }
               // --- SINGLE CHAR escape ----------------------------------------
               // --- VT100 -----------------------------------------------------
-              else if(mode==VT100){  // VT100 Commands
+              else if(mode==TERMINAL_MODE_VT100){  // VT100 Commands
 
                 if (asc=='7' ){
                     // save cursor position
@@ -652,7 +686,7 @@ void handle_new_character(unsigned char asc){
               }
               // --- SINGLE CHAR escape ----------------------------------------
               // --- VT52 ------------------------------------------------------
-              else if(mode==VT52){ // VT52 Commands
+              else if(mode==TERMINAL_MODE_VT52){ // VT52 Commands
 
                 if (asc=='A' ){
                     move_cursor_up( 1 );
@@ -691,13 +725,68 @@ void handle_new_character(unsigned char asc){
                     reset_escape_sequence();
                 }
                 else if (asc=='<' ){
-                    mode = VT100;
+                    mode = TERMINAL_MODE_VT100;
                     reset_escape_sequence();
                 }
                 else
                     // unrecognised character after escape.
                     reset_escape_sequence();
             }
+              // --- SINGLE CHAR escape ----------------------------------------
+              // --- Televideo -------------------------------------------------
+              else if(mode==TERMINAL_MODE_TVI){ // Televideo Commands
+                if (asc=='A' ){
+                    move_cursor_up( 1 );
+                    reset_escape_sequence();
+                }
+                else if (asc=='B' ){
+                    move_cursor_down( 1 );
+                    reset_escape_sequence();
+                }
+                else if (asc=='C' ){
+                    move_cursor_forward( 1 );
+                    reset_escape_sequence();
+                }
+                else if (asc=='D' ){
+                    move_cursor_backward( 1 );
+                    reset_escape_sequence();
+                }
+                else if (asc=='H' ){
+                    move_cursor_home();
+                    reset_escape_sequence();
+                }
+                else if (asc=='I' ){
+                    move_cursor_lf( true ); // reverse move
+                    reset_escape_sequence();
+                }
+                else if (asc=='J' ){
+                    clear_screen_from_cursor();
+                    reset_escape_sequence();
+                }
+                else if (asc=='K' ){
+                    clear_line_from_cursor();
+                    reset_escape_sequence();
+                }
+                else if (asc=='*' ){
+                    clear_screen();
+                    move_cursor_home();
+                    reset_escape_sequence();
+                }
+                else if (asc=='=' ){
+                    // Televideo direct cursor address:
+                    // ESC = <row+31> <col+31>
+                    esc_state = ESC_TVI_ROW;
+                }
+                else if (asc=='<' ){
+                    // leave Televideo mode
+                    mode = TERMINAL_MODE_VT100;
+                    reset_escape_sequence();
+                }
+                else{
+                    // unrecognised character after escape.
+                    reset_escape_sequence();
+                }
+              }
             // ==============
 
               else
@@ -743,6 +832,23 @@ void handle_new_character(unsigned char asc){
                   // unexpected value, undefined
               }
               break;
+
+          case ESC_TVI_ROW:
+              // Televideo direct cursor row (offset by 31)
+              tvi_row = asc;
+              esc_state = ESC_TVI_COLUMN;
+              break;
+
+          case ESC_TVI_COLUMN: {
+              // Televideo direct cursor column (offset by 31)
+              int row = (int)tvi_row - 31;
+              int col = (int)asc - 31;
+              if(row < 1) row = 1;
+              if(col < 1) col = 1;
+              move_cursor_at( row, col );
+              reset_escape_sequence();
+              break;
+          }
       }
 
   }

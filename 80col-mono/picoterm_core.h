@@ -25,13 +25,18 @@
 #define _PICOTERM_CORE_H
 
 
+#define TERMINAL_MODE_VT100 1
+#define TERMINAL_MODE_VT52  2
+#define TERMINAL_MODE_TVI   3
+
 void terminal_init();
 void terminal_reset();
 
 char get_bell_state();
 void set_bell_state(char state);
 void handle_new_character(unsigned char ch);
-
+int get_terminal_mode();
+void set_terminal_mode(int new_mode);
 
 // for debugging purposes
 void print_ascii_value(unsigned char asc);

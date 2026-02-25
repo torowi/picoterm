@@ -154,7 +154,7 @@ void display_config(){
     print_nupet(msg, config.font_id );
     sprintf(msg, "\x0E0  %su Televideo (TVI) mode                   \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
+    print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
     sprintf(msg, "\x0E0  %sp NupetSCII Mono8    %sq CP437 Mono8      \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_MONO8)?"\x0D1":" ", (config.graph_id==FONT_CP437_MONO8)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
 		sprintf(msg, "\x0E0  %sr NupetSCII OlivettiT%ss CP437 OlivettiT  \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_OLIVETTITHIN)?"\x0D1":" ", (config.graph_id==FONT_CP437_OLIVETTITHIN)?"\x0D1":" " );

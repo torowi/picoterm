@@ -38,6 +38,7 @@
 #define ESC_PARAMETER_READY     2
 #define ESC_TVI_ROW             3
 #define ESC_TVI_COLUMN          4
+#define ESC_TVI_IGNORE_AT       5
 
 #define MAX_ESC_PARAMS          5
 static int esc_state = ESC_READY;
@@ -131,6 +132,9 @@ void set_terminal_mode(int new_mode){
     // VT52 belongs to the VT family and is saved as VT100/VT52.
     config.terminal_mode = (mode == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
 
+    // TVI special mode: keep cursor hidden.
+    cursor_visible(mode != TERMINAL_MODE_TVI);
+
     reset_escape_sequence();
 }
 
@@ -169,13 +173,13 @@ void esc_sequence_received(){
   if(esc_c1=='[' && parameter_q && esc_parameters[0]==61){
       if(esc_final_byte=='h'){
           // ESC[?61h -> VT family mode (VT100 default)
-          mode = TERMINAL_MODE_VT100;
+          set_terminal_mode( TERMINAL_MODE_VT100 );
           reset_escape_sequence();
           return;
       }
       else if(esc_final_byte=='l'){
           // ESC[?61l -> Televideo mode
-          mode = TERMINAL_MODE_TVI;
+          set_terminal_mode( TERMINAL_MODE_TVI );
           reset_escape_sequence();
           return;
       }
@@ -725,7 +729,7 @@ void handle_new_character(unsigned char asc){
                     reset_escape_sequence();
                 }
                 else if (asc=='<' ){
-                    mode = TERMINAL_MODE_VT100;
+                    set_terminal_mode( TERMINAL_MODE_VT100 );
                     reset_escape_sequence();
                 }
                 else if (mode==TERMINAL_MODE_VT52 && asc=='Z' ){
@@ -741,6 +745,11 @@ void handle_new_character(unsigned char asc){
                     // Televideo direct cursor address:
                     // ESC = <row+31> <col+31>
                     esc_state = ESC_TVI_ROW;
+                }
+                else if (mode==TERMINAL_MODE_TVI && asc=='@' ){
+                    // Special TVI mode: ignore ESC @ ... sequences entirely.
+                    // Discard until a final byte is reached.
+                    esc_state = ESC_TVI_IGNORE_AT;
                 }
                 else
                     // unrecognised character after escape.
@@ -808,6 +817,15 @@ void handle_new_character(unsigned char asc){
               reset_escape_sequence();
               break;
           }
+
+          case ESC_TVI_IGNORE_AT:
+              // Ignore ESC @ ... sequence payload completely.
+              // If a new ESC appears, start a new sequence immediately.
+              if(asc==0x1B)
+                  esc_state = ESC_ESC_RECEIVED;
+              else if(asc>=0x40 && asc<=0x7E)
+                  reset_escape_sequence();
+              break;
       }
 
   }

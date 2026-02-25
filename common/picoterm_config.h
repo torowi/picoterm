@@ -44,7 +44,7 @@ typedef struct PicotermConfig {
 	// version 4
 	uint8_t graph_id;  // ANSI Font_ID to use when switching to graphical ANSI font.
 	// version 5
-	uint8_t terminal_mode; // Saved terminal mode selection (VT family or TVI)
+	uint8_t terminal_mode; // Saved terminal mode selection (VT family, TVI, TVI special)
 } picoterm_config_t; // Issue #13, conversion to typedef required, awesome contribution of Spock64
 
 void load_config(); // try to load config otherwise init with defaults

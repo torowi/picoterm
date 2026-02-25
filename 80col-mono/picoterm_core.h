@@ -28,6 +28,7 @@
 #define TERMINAL_MODE_VT100 1
 #define TERMINAL_MODE_VT52  2
 #define TERMINAL_MODE_TVI   3
+#define TERMINAL_MODE_TVI_SPECIAL 4
 
 void terminal_init();
 void terminal_reset();

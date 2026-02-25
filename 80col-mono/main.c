@@ -721,7 +721,12 @@ int main(void) {
 
   video_main();       // also build the font
   terminal_reset();
-  set_terminal_mode(config.terminal_mode == TERMINAL_MODE_TVI ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100);
+  if(config.terminal_mode == TERMINAL_MODE_TVI_SPECIAL)
+    set_terminal_mode(TERMINAL_MODE_TVI_SPECIAL);
+  else if(config.terminal_mode == TERMINAL_MODE_TVI)
+    set_terminal_mode(TERMINAL_MODE_TVI);
+  else
+    set_terminal_mode(TERMINAL_MODE_VT100);
   display_terminal(); // display terminal entry screen
   tusb_init(); // initialize tinyusb stack
 
@@ -765,6 +770,8 @@ int main(void) {
       clrscr();
       copy_secondary_to_main_screen(); // restore terminal screen
       restore_cursor_position();
+      // Re-apply terminal-specific cursor policy after leaving menus.
+      cursor_visible(get_terminal_mode() != TERMINAL_MODE_TVI_SPECIAL);
       clear_key_buffer(); // empty the keyboard buffer
       old_menu = is_menu;
     }

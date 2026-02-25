@@ -149,12 +149,12 @@ void display_config(){
     print_nupet(msg, config.font_id );
     sprintf(msg, "\x0E0  %sm ANSI Graphic (8bits)     \x0C2             \x0E0\r\n", (config.font_id > FONT_ASCII)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    print_nupet("\x0E8\x0C3 Terminal type \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
-    sprintf(msg, "\x0E0  %st VT100/VT52 mode           \x0C2             \x0E0\r\n", (get_terminal_mode() != TERMINAL_MODE_TVI)?"\x0D1":" " );
+    print_nupet("\x0E8\x0C3 Terminal type \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
+    sprintf(msg, "\x0E0  %st VT100/VT52 mode                        \x0E0\r\n", (get_terminal_mode() != TERMINAL_MODE_TVI)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    sprintf(msg, "\x0E0  %su Televideo (TVI) mode      \x0C2             \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %su Televideo (TVI) mode                   \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
+    print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
     sprintf(msg, "\x0E0  %sp NupetSCII Mono8    %sq CP437 Mono8      \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_MONO8)?"\x0D1":" ", (config.graph_id==FONT_CP437_MONO8)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
 		sprintf(msg, "\x0E0  %sr NupetSCII OlivettiT%ss CP437 OlivettiT  \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_OLIVETTITHIN)?"\x0D1":" ", (config.graph_id==FONT_CP437_OLIVETTITHIN)?"\x0D1":" " );
@@ -184,6 +184,7 @@ char handle_config_input(){
 
   // Store the config
   if ( _ch == 'S' ){
+    config.terminal_mode = (get_terminal_mode() == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
     print_string( "\r\nWrite to flash! Will reboot in 2 seconds.");
     sleep_ms( 1000 );
     stop_core1(); // suspend rendering for race condition
@@ -339,6 +340,7 @@ void display_help(){
 	print_nupet("\x0C2 \x083 Shift+Ctrl+C : Command Line Interface        \x0C2\r\n", config.font_id ); // strip Nupetscii when not activated
   print_nupet("\x0C2 \x083 Shift+Ctrl+H : Help screen                   \x0C2\r\n", config.font_id ); // strip Nupetscii when not activated
   print_nupet("\x0C2 \x083 Shift+Ctrl+L : Toggle ASCII/ANSI charset     \x0C2\r\n", config.font_id );
+  print_nupet("\x0C2 \x083 Shift+Ctrl+I : Credentials/About screen      \x0C2\r\n", config.font_id );
   print_nupet("\x0C2 \x083 Shift+Ctrl+M : Configuration menu            \x0C2\r\n", config.font_id );
   print_nupet("\x0C2 \x083 Shift+Ctrl+N : Display current charset       \x0C2\r\n", config.font_id );
   print_nupet("\x0C2                                                \x0C2\r\n", config.font_id );
@@ -354,6 +356,49 @@ void display_help(){
 /* --- TERMINAL ---------------------------------------------------------------
    -
    ---------------------------------------------------------------------------*/
+
+void display_credentials(){
+  char msg[80];
+  char _parity = '?';
+
+  clrscr();
+  move_cursor_home();
+
+  print_nupet("\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6 Credentials / About \x0A6\x0A6\r\n", config.font_id );
+
+  sprintf(msg, "PicoTerm %s\r\n", CMAKE_PROJECT_VERSION );
+  print_string(msg);
+  sprintf(msg, "TinyUSB=%d.%d.%d\r\n", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
+  print_string(msg);
+  sprintf(msg, "Keymap=%s rev %d\r\n", KEYMAP, KEYMAP_REV );
+  print_string(msg);
+  sprintf(msg, "Charset=%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) );
+  print_string(msg);
+  sprintf(msg, "Terminal mode=%s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
+  print_string(msg);
+  sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
+  print_string(msg);
+
+  switch(config.parity){
+    case UART_PARITY_NONE:
+      _parity = 'N';
+      break;
+    case UART_PARITY_ODD:
+      _parity = 'O';
+      break;
+    case UART_PARITY_EVEN:
+      _parity = 'E';
+      break;
+  }
+  sprintf(msg, "Serial: %i bds %i%c%i\r\n", config.baudrate, config.databits, _parity, config.stopbits );
+  print_string(msg);
+
+  print_string("\r\n(ESC=close) ? ");
+  cursor_visible(true);
+  clear_cursor();
+  print_cursor();
+}
+
 #define n_array (sizeof (logo) / sizeof (const char *))
 
 void display_terminal(){
@@ -365,28 +410,8 @@ void display_terminal(){
     for( int i=0; i < LOGO_LINES; i++ ){
       print_string( (char *)PICOTERM_LOGO[i] );
     }
-    sprintf(msg, "TinyUSB=%d.%d.%d, ", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
-    print_string(msg);
-    sprintf(msg, "Keymap=%s rev %d, ", KEYMAP, KEYMAP_REV );
-    print_string(msg);
-    sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
-    print_string(msg);
-    sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
-    print_string(msg);
-    char _parity = '?';
-    switch(config.parity){
-      case UART_PARITY_NONE:
-        _parity = 'N';
-        break;
-      case UART_PARITY_ODD:
-        _parity = 'O';
-        break;
-      case UART_PARITY_EVEN:
-        _parity = 'E';
-        break;
-    }
-    // Update "project(picoterm VERSION 1.1)" in CMakeList
-    sprintf(msg, "PicoTerm %s @ %i bds %i%c%i\r\n", CMAKE_PROJECT_VERSION, config.baudrate, config.databits, _parity, config.stopbits );
+    print_string("\r\n");
+    snprintf(msg, sizeof(msg), "Press Shift+Ctrl+I for Credentials/About\r\n");
     print_string(msg);
 
 

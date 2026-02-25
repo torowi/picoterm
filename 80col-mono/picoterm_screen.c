@@ -371,6 +371,8 @@ void display_terminal(){
     print_string(msg);
     sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
     print_string(msg);
+    sprintf(msg, "Terminal mode: %s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
+    print_string(msg);
     sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
     print_string(msg);
     char _parity = '?';

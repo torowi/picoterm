@@ -190,18 +190,13 @@ In the **PicoTerm configuration menu** (Shift+Ctrl+M), use:
 - `t` for VT100/VT52 mode
 - `u` for Televideo (TVI) mode
 
+TVI reuses the VT52 single-byte commands `\ESCA`, `\ESCB`, `\ESCC`, `\ESCD`, `\ESCH`, `\ESCI`, `\ESCJ`, `\ESCK` and `\ESC<`.
+To avoid duplication, see their behavior in the VT52 table above.
+
 | Escape sequence             | Description                                              |
 |-----------------------------|----------------------------------------------------------|
-| \ESCA       | Move the cursor up 1 line (TVI mode)                                      |
-| \ESCB       | Move the cursor down 1 line (TVI mode)                                    |
-| \ESCC       | Move the cursor right 1 col (TVI mode)                                    |
-| \ESCD       | Move the cursor left 1 col (TVI mode)                                     |
-| \ESCH       | Move to 0-0 (TVI mode)                                                     |
-| \ESCJ       | Clear from cursor to end of screen (TVI mode)                             |
-| \ESCK       | Clear from cursor to end of line (TVI mode)                               |
 | \ESC*       | Clear screen and move cursor home (TVI mode)                              |
 | \ESC=rc     | Direct cursor addressing. `r` and `c` are row/column bytes encoded as value+31. |
-| \ESC<       | Leave TVI mode and return to VT100                                        |
 
 
 ## DEC Line Drawing

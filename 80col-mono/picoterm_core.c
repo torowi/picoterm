@@ -136,6 +136,9 @@ void set_terminal_mode(int new_mode){
     // TVI special mode: keep cursor hidden.
     cursor_visible(mode != TERMINAL_MODE_TVI_SPECIAL);
 
+    // TVI special mode: keep cursor hidden.
+    cursor_visible(mode != TERMINAL_MODE_TVI);
+
     reset_escape_sequence();
 }
 

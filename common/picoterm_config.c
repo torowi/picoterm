@@ -46,6 +46,8 @@ void set_default_config( struct PicotermConfig *c ){
 	c->font_id = FONT_ASCII; // current font to use
 	// version 4
 	c->graph_id = FONT_NUPETSCII_MONO8; // prefered graphical font.
+	// version 5
+	c->terminal_mode = 1; // VT100/VT52 family
 
 }
 
@@ -70,6 +72,11 @@ void upgrade_config( struct PicotermConfig *c ){
     // Ok for version 4
     c->version  = 4;
   }
+	if( c->version == 4 ){ // Upgrade to version 5 with defaults
+		c->terminal_mode = 1; // VT100/VT52 family
+		// Ok for version 5
+		c->version  = 5;
+	}
 	// Small sanity check
 	// if graphical ANSI font activated (in saved data), just override it with
 	// the currently graphical ANSI font selected by the user.
@@ -115,6 +122,8 @@ void debug_print_config( struct PicotermConfig *c ){
 	sprintf( debug_msg, "  font_id=%u", c->font_id );
   debug_print( debug_msg );
 	sprintf( debug_msg, "  graph_id=%u", c->graph_id );
+  debug_print( debug_msg );
+	sprintf( debug_msg, "  terminal_mode=%u", c->terminal_mode );
   debug_print( debug_msg );
 }
 

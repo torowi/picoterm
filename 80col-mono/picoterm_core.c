@@ -685,9 +685,8 @@ void handle_new_character(unsigned char asc){
 
               }
               // --- SINGLE CHAR escape ----------------------------------------
-              // --- VT52 ------------------------------------------------------
-              else if(mode==TERMINAL_MODE_VT52){ // VT52 Commands
-
+              // --- VT52 / Televideo ------------------------------------------
+              else if(mode==TERMINAL_MODE_VT52 || mode==TERMINAL_MODE_TVI){
                 if (asc=='A' ){
                     move_cursor_up( 1 );
                     reset_escape_sequence();
@@ -718,74 +717,29 @@ void handle_new_character(unsigned char asc){
                 }
                 else if (asc=='K' ){
                     clear_line_from_cursor();
-                    reset_escape_sequence();
-                }
-                else if (asc=='Z' ){
-                    response_VT52Z();
                     reset_escape_sequence();
                 }
                 else if (asc=='<' ){
                     mode = TERMINAL_MODE_VT100;
                     reset_escape_sequence();
                 }
-                else
-                    // unrecognised character after escape.
-                    reset_escape_sequence();
-            }
-              // --- SINGLE CHAR escape ----------------------------------------
-              // --- Televideo -------------------------------------------------
-              else if(mode==TERMINAL_MODE_TVI){ // Televideo Commands
-                if (asc=='A' ){
-                    move_cursor_up( 1 );
+                else if (mode==TERMINAL_MODE_VT52 && asc=='Z' ){
+                    response_VT52Z();
                     reset_escape_sequence();
                 }
-                else if (asc=='B' ){
-                    move_cursor_down( 1 );
-                    reset_escape_sequence();
-                }
-                else if (asc=='C' ){
-                    move_cursor_forward( 1 );
-                    reset_escape_sequence();
-                }
-                else if (asc=='D' ){
-                    move_cursor_backward( 1 );
-                    reset_escape_sequence();
-                }
-                else if (asc=='H' ){
+                else if (mode==TERMINAL_MODE_TVI && asc=='*' ){
+                    clrscr();
                     move_cursor_home();
                     reset_escape_sequence();
                 }
-                else if (asc=='I' ){
-                    move_cursor_lf( true ); // reverse move
-                    reset_escape_sequence();
-                }
-                else if (asc=='J' ){
-                    clear_screen_from_cursor();
-                    reset_escape_sequence();
-                }
-                else if (asc=='K' ){
-                    clear_line_from_cursor();
-                    reset_escape_sequence();
-                }
-                else if (asc=='*' ){
-                    clear_screen();
-                    move_cursor_home();
-                    reset_escape_sequence();
-                }
-                else if (asc=='=' ){
+                else if (mode==TERMINAL_MODE_TVI && asc=='=' ){
                     // Televideo direct cursor address:
                     // ESC = <row+31> <col+31>
                     esc_state = ESC_TVI_ROW;
                 }
-                else if (asc=='<' ){
-                    // leave Televideo mode
-                    mode = TERMINAL_MODE_VT100;
-                    reset_escape_sequence();
-                }
-                else{
+                else
                     // unrecognised character after escape.
                     reset_escape_sequence();
-                }
               }
             // ==============
 

@@ -12,7 +12,7 @@
 
 #define FLASH_TARGET_OFFSET (256 * 1024)  // from start of flash
 #define MAGIC_KEY "PTCFG\0"
-#define CONFIG_VERSION 4
+#define CONFIG_VERSION 5
 
 #define WHITE 0
 #define LIGHTAMBER 1
@@ -43,6 +43,8 @@ typedef struct PicotermConfig {
 	uint8_t font_id;
 	// version 4
 	uint8_t graph_id;  // ANSI Font_ID to use when switching to graphical ANSI font.
+	// version 5
+	uint8_t terminal_mode; // Saved terminal mode selection (VT family or TVI)
 } picoterm_config_t; // Issue #13, conversion to typedef required, awesome contribution of Spock64
 
 void load_config(); // try to load config otherwise init with defaults

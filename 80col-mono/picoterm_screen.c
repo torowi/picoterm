@@ -184,6 +184,7 @@ char handle_config_input(){
 
   // Store the config
   if ( _ch == 'S' ){
+    config.terminal_mode = (get_terminal_mode() == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
     print_string( "\r\nWrite to flash! Will reboot in 2 seconds.");
     sleep_ms( 1000 );
     stop_core1(); // suspend rendering for race condition
@@ -370,6 +371,8 @@ void display_terminal(){
     sprintf(msg, "Keymap=%s rev %d, ", KEYMAP, KEYMAP_REV );
     print_string(msg);
     sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
+    print_string(msg);
+    sprintf(msg, "Terminal mode: %s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
     print_string(msg);
     sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
     print_string(msg);

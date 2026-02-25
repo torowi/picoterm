@@ -721,6 +721,7 @@ int main(void) {
 
   video_main();       // also build the font
   terminal_reset();
+  set_terminal_mode(config.terminal_mode == TERMINAL_MODE_TVI ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100);
   display_terminal(); // display terminal entry screen
   tusb_init(); // initialize tinyusb stack
 

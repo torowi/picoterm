@@ -46,6 +46,7 @@
 #define MENU_CHARSET   0x02 // display current charset
 #define MENU_HELP      0x03 // display the HELP menu
 #define MENU_COMMAND   0x04 // Key-in interpreter command
+#define MENU_CREDENTIALS 0x05 // display credentials/about screen
 
 
 static uint32_t start_time;

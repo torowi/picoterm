@@ -721,6 +721,7 @@ int main(void) {
 
   video_main();       // also build the font
   terminal_reset();
+  set_terminal_mode(config.terminal_mode == TERMINAL_MODE_TVI ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100);
   display_terminal(); // display terminal entry screen
   tusb_init(); // initialize tinyusb stack
 
@@ -749,6 +750,9 @@ int main(void) {
           break;
         case MENU_HELP:
           display_help();
+          break;
+        case MENU_CREDENTIALS:
+          display_credentials();
           break;
 				case MENU_COMMAND:
 					display_command();
@@ -888,6 +892,12 @@ static void pico_key_down(int scancode, int keysym, int modifiers) {
 
       if( (ch=='h') && (modifiers == (WITH_CTRL + WITH_SHIFT)) ){
         id_menu = MENU_HELP;
+        is_menu = !(is_menu);
+        return; // do not add key to "Keyboard buffer"
+      }
+
+      if( (ch=='i') && (modifiers == (WITH_CTRL + WITH_SHIFT)) ){
+        id_menu = MENU_CREDENTIALS;
         is_menu = !(is_menu);
         return; // do not add key to "Keyboard buffer"
       }

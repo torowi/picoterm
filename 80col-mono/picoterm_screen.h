@@ -21,6 +21,7 @@ void display_config();
 char handle_config_input();
 
 void display_help();
+void display_credentials();
 
 
 

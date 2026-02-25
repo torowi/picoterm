@@ -149,12 +149,12 @@ void display_config(){
     print_nupet(msg, config.font_id );
     sprintf(msg, "\x0E0  %sm ANSI Graphic (8bits)     \x0C2             \x0E0\r\n", (config.font_id > FONT_ASCII)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    print_nupet("\x0E8\x0C3 Terminal type \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
-    sprintf(msg, "\x0E0  %st VT100/VT52 mode           \x0C2             \x0E0\r\n", (get_terminal_mode() != TERMINAL_MODE_TVI)?"\x0D1":" " );
+    print_nupet("\x0E8\x0C3 Terminal type \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
+    sprintf(msg, "\x0E0  %st VT100/VT52 mode                        \x0E0\r\n", (get_terminal_mode() != TERMINAL_MODE_TVI)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    sprintf(msg, "\x0E0  %su Televideo (TVI) mode      \x0C2             \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %su Televideo (TVI) mode                   \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
+    print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
     sprintf(msg, "\x0E0  %sp NupetSCII Mono8    %sq CP437 Mono8      \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_MONO8)?"\x0D1":" ", (config.graph_id==FONT_CP437_MONO8)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
 		sprintf(msg, "\x0E0  %sr NupetSCII OlivettiT%ss CP437 OlivettiT  \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_OLIVETTITHIN)?"\x0D1":" ", (config.graph_id==FONT_CP437_OLIVETTITHIN)?"\x0D1":" " );
@@ -184,6 +184,7 @@ char handle_config_input(){
 
   // Store the config
   if ( _ch == 'S' ){
+    config.terminal_mode = (get_terminal_mode() == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
     print_string( "\r\nWrite to flash! Will reboot in 2 seconds.");
     sleep_ms( 1000 );
     stop_core1(); // suspend rendering for race condition
@@ -407,8 +408,31 @@ void display_terminal(){
     for( int i=0; i < LOGO_LINES; i++ ){
       print_string( (char *)PICOTERM_LOGO[i] );
     }
-    print_string("\r\n");
-    print_string("Press Shift+Ctrl+I for Credentials/About\r\n");
+    sprintf(msg, "TinyUSB=%d.%d.%d, ", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
+    print_string(msg);
+    sprintf(msg, "Keymap=%s rev %d, ", KEYMAP, KEYMAP_REV );
+    print_string(msg);
+    sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
+    print_string(msg);
+    sprintf(msg, "Terminal mode: %s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
+    print_string(msg);
+    sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
+    print_string(msg);
+    char _parity = '?';
+    switch(config.parity){
+      case UART_PARITY_NONE:
+        _parity = 'N';
+        break;
+      case UART_PARITY_ODD:
+        _parity = 'O';
+        break;
+      case UART_PARITY_EVEN:
+        _parity = 'E';
+        break;
+    }
+    // Update "project(picoterm VERSION 1.1)" in CMakeList
+    sprintf(msg, "PicoTerm %s @ %i bds %i%c%i\r\n", CMAKE_PROJECT_VERSION, config.baudrate, config.databits, _parity, config.stopbits );
+    print_string(msg);
 
 
     // print cursor

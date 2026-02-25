@@ -126,6 +126,11 @@ void set_terminal_mode(int new_mode){
         mode = TERMINAL_MODE_VT52;
     else
         mode = TERMINAL_MODE_VT100;
+
+    // Persist menu-level mode selection in config (TVI vs VT family).
+    // VT52 belongs to the VT family and is saved as VT100/VT52.
+    config.terminal_mode = (mode == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
+
     reset_escape_sequence();
 }
 

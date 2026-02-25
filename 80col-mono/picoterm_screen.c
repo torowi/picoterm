@@ -150,9 +150,11 @@ void display_config(){
     sprintf(msg, "\x0E0  %sm ANSI Graphic (8bits)     \x0C2             \x0E0\r\n", (config.font_id > FONT_ASCII)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E8\x0C3 Terminal type \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
-    sprintf(msg, "\x0E0  %st VT100/VT52 mode                        \x0E0\r\n", (get_terminal_mode() != TERMINAL_MODE_TVI)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %st VT100/VT52 mode (Standard)             \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_VT100 || get_terminal_mode() == TERMINAL_MODE_VT52)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    sprintf(msg, "\x0E0  %su Televideo (TVI) mode                   \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %su Televideo (TVI) mode                  \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
+    print_nupet(msg, config.font_id );
+    sprintf(msg, "\x0E0  %sv Televideo (TVI) Spezialmodus          \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI_SPECIAL)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
     sprintf(msg, "\x0E0  %sp NupetSCII Mono8    %sq CP437 Mono8      \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_MONO8)?"\x0D1":" ", (config.graph_id==FONT_CP437_MONO8)?"\x0D1":" " );
@@ -160,7 +162,7 @@ void display_config(){
 		sprintf(msg, "\x0E0  %sr NupetSCII OlivettiT%ss CP437 OlivettiT  \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_OLIVETTITHIN)?"\x0D1":" ", (config.graph_id==FONT_CP437_OLIVETTITHIN)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E5\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E7\r\n", config.font_id );
-    print_string("\r\n(S upcase=save / ESC=close) ? ");
+    print_string("\r\n(S upcase=save / t=VT / u=TVI / v=TVI+ / ESC=close) ? ");
 
 
     cursor_visible(true);
@@ -184,7 +186,7 @@ char handle_config_input(){
 
   // Store the config
   if ( _ch == 'S' ){
-    config.terminal_mode = (get_terminal_mode() == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
+    config.terminal_mode = get_terminal_mode();
     print_string( "\r\nWrite to flash! Will reboot in 2 seconds.");
     sleep_ms( 1000 );
     stop_core1(); // suspend rendering for race condition
@@ -287,9 +289,11 @@ char handle_config_input(){
     conio_config.cursor.symbol = get_cursor_char( config.font_id, CURSOR_TYPE_DEFAULT ) - 0x20;
   }
   // Terminal type selection (VT100/VT52 family versus TVI)
-  if( (_ch=='t') || (_ch=='u') ) {
+  if( (_ch=='t') || (_ch=='u') || (_ch=='v') ) {
     if(_ch=='u')
       set_terminal_mode( TERMINAL_MODE_TVI );
+    else if(_ch=='v')
+      set_terminal_mode( TERMINAL_MODE_TVI_SPECIAL );
     else
       set_terminal_mode( TERMINAL_MODE_VT100 );
   }
@@ -374,7 +378,7 @@ void display_credentials(){
   print_string(msg);
   sprintf(msg, "Charset=%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) );
   print_string(msg);
-  sprintf(msg, "Terminal mode=%s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
+  sprintf(msg, "Terminal mode=%s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : (get_terminal_mode()==TERMINAL_MODE_TVI_SPECIAL ? "TVI Spezial" : "VT100/VT52") );
   print_string(msg);
   sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
   print_string(msg);

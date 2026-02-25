@@ -123,14 +123,18 @@ int get_terminal_mode(){ return mode; }
 void set_terminal_mode(int new_mode){
     if(new_mode==TERMINAL_MODE_TVI)
         mode = TERMINAL_MODE_TVI;
+    else if(new_mode==TERMINAL_MODE_TVI_SPECIAL)
+        mode = TERMINAL_MODE_TVI_SPECIAL;
     else if(new_mode==TERMINAL_MODE_VT52)
         mode = TERMINAL_MODE_VT52;
     else
         mode = TERMINAL_MODE_VT100;
 
-    // Persist menu-level mode selection in config (TVI vs VT family).
-    // VT52 belongs to the VT family and is saved as VT100/VT52.
-    config.terminal_mode = (mode == TERMINAL_MODE_TVI) ? TERMINAL_MODE_TVI : TERMINAL_MODE_VT100;
+    // Persist selected terminal mode in config (VT100/VT52, TVI, TVI special).
+    config.terminal_mode = mode;
+
+    // TVI special mode: keep cursor hidden.
+    cursor_visible(mode != TERMINAL_MODE_TVI_SPECIAL);
 
     // TVI special mode: keep cursor hidden.
     cursor_visible(mode != TERMINAL_MODE_TVI);
@@ -584,7 +588,7 @@ void esc_sequence_received(){
           // ignore everything else
       }
   }
-  else if(mode==TERMINAL_MODE_TVI){
+  else if(mode==TERMINAL_MODE_TVI || mode==TERMINAL_MODE_TVI_SPECIAL){
       // Televideo command set mostly relies on ESC + one-byte command.
       // Parameterized CSI sequences are intentionally ignored in TVI mode,
       // except mode switch control handled above.
@@ -695,7 +699,7 @@ void handle_new_character(unsigned char asc){
               }
               // --- SINGLE CHAR escape ----------------------------------------
               // --- VT52 / Televideo ------------------------------------------
-              else if(mode==TERMINAL_MODE_VT52 || mode==TERMINAL_MODE_TVI){
+              else if(mode==TERMINAL_MODE_VT52 || mode==TERMINAL_MODE_TVI || mode==TERMINAL_MODE_TVI_SPECIAL){
                 if (asc=='A' ){
                     move_cursor_up( 1 );
                     reset_escape_sequence();
@@ -736,17 +740,17 @@ void handle_new_character(unsigned char asc){
                     response_VT52Z();
                     reset_escape_sequence();
                 }
-                else if (mode==TERMINAL_MODE_TVI && asc=='*' ){
+                else if ((mode==TERMINAL_MODE_TVI || mode==TERMINAL_MODE_TVI_SPECIAL) && asc=='*' ){
                     clrscr();
                     move_cursor_home();
                     reset_escape_sequence();
                 }
-                else if (mode==TERMINAL_MODE_TVI && asc=='=' ){
+                else if ((mode==TERMINAL_MODE_TVI || mode==TERMINAL_MODE_TVI_SPECIAL) && asc=='=' ){
                     // Televideo direct cursor address:
                     // ESC = <row+31> <col+31>
                     esc_state = ESC_TVI_ROW;
                 }
-                else if (mode==TERMINAL_MODE_TVI && asc=='@' ){
+                else if (mode==TERMINAL_MODE_TVI_SPECIAL && asc=='@' ){
                     // Special TVI mode: ignore ESC @ ... sequences entirely.
                     // Discard until a final byte is reached.
                     esc_state = ESC_TVI_IGNORE_AT;

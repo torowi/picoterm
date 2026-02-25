@@ -402,6 +402,8 @@ void display_credentials(){
 #define n_array (sizeof (logo) / sizeof (const char *))
 
 void display_terminal(){
+    char msg[80];
+
     clrscr();
     move_cursor_home(); // csr.x = 0; csr.y = 0;
 

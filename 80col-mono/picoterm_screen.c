@@ -408,30 +408,8 @@ void display_terminal(){
     for( int i=0; i < LOGO_LINES; i++ ){
       print_string( (char *)PICOTERM_LOGO[i] );
     }
-    sprintf(msg, "TinyUSB=%d.%d.%d, ", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
-    print_string(msg);
-    sprintf(msg, "Keymap=%s rev %d, ", KEYMAP, KEYMAP_REV );
-    print_string(msg);
-    sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
-    print_string(msg);
-    sprintf(msg, "Terminal mode: %s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
-    print_string(msg);
-    sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
-    print_string(msg);
-    char _parity = '?';
-    switch(config.parity){
-      case UART_PARITY_NONE:
-        _parity = 'N';
-        break;
-      case UART_PARITY_ODD:
-        _parity = 'O';
-        break;
-      case UART_PARITY_EVEN:
-        _parity = 'E';
-        break;
-    }
-    // Update "project(picoterm VERSION 1.1)" in CMakeList
-    sprintf(msg, "PicoTerm %s @ %i bds %i%c%i\r\n", CMAKE_PROJECT_VERSION, config.baudrate, config.databits, _parity, config.stopbits );
+    print_string("\r\n");
+    snprintf(msg, sizeof(msg), "Press Shift+Ctrl+I for Credentials/About\r\n");
     print_string(msg);
 
 

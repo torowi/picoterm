@@ -340,6 +340,7 @@ void display_help(){
 	print_nupet("\x0C2 \x083 Shift+Ctrl+C : Command Line Interface        \x0C2\r\n", config.font_id ); // strip Nupetscii when not activated
   print_nupet("\x0C2 \x083 Shift+Ctrl+H : Help screen                   \x0C2\r\n", config.font_id ); // strip Nupetscii when not activated
   print_nupet("\x0C2 \x083 Shift+Ctrl+L : Toggle ASCII/ANSI charset     \x0C2\r\n", config.font_id );
+  print_nupet("\x0C2 \x083 Shift+Ctrl+I : Credentials/About screen      \x0C2\r\n", config.font_id );
   print_nupet("\x0C2 \x083 Shift+Ctrl+M : Configuration menu            \x0C2\r\n", config.font_id );
   print_nupet("\x0C2 \x083 Shift+Ctrl+N : Display current charset       \x0C2\r\n", config.font_id );
   print_nupet("\x0C2                                                \x0C2\r\n", config.font_id );
@@ -355,11 +356,52 @@ void display_help(){
 /* --- TERMINAL ---------------------------------------------------------------
    -
    ---------------------------------------------------------------------------*/
+
+void display_credentials(){
+  char msg[80];
+  char _parity = '?';
+
+  clrscr();
+  move_cursor_home();
+
+  print_nupet("\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6 Credentials / About \x0A6\x0A6\r\n", config.font_id );
+
+  sprintf(msg, "PicoTerm %s\r\n", CMAKE_PROJECT_VERSION );
+  print_string(msg);
+  sprintf(msg, "TinyUSB=%d.%d.%d\r\n", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
+  print_string(msg);
+  sprintf(msg, "Keymap=%s rev %d\r\n", KEYMAP, KEYMAP_REV );
+  print_string(msg);
+  sprintf(msg, "Charset=%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) );
+  print_string(msg);
+  sprintf(msg, "Terminal mode=%s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : "VT100/VT52" );
+  print_string(msg);
+  sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
+  print_string(msg);
+
+  switch(config.parity){
+    case UART_PARITY_NONE:
+      _parity = 'N';
+      break;
+    case UART_PARITY_ODD:
+      _parity = 'O';
+      break;
+    case UART_PARITY_EVEN:
+      _parity = 'E';
+      break;
+  }
+  sprintf(msg, "Serial: %i bds %i%c%i\r\n", config.baudrate, config.databits, _parity, config.stopbits );
+  print_string(msg);
+
+  print_string("\r\n(ESC=close) ? ");
+  cursor_visible(true);
+  clear_cursor();
+  print_cursor();
+}
+
 #define n_array (sizeof (logo) / sizeof (const char *))
 
 void display_terminal(){
-    char msg[80];
-
     clrscr();
     move_cursor_home(); // csr.x = 0; csr.y = 0;
 

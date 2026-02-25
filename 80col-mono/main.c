@@ -751,6 +751,9 @@ int main(void) {
         case MENU_HELP:
           display_help();
           break;
+        case MENU_CREDENTIALS:
+          display_credentials();
+          break;
 				case MENU_COMMAND:
 					display_command();
 					break;
@@ -889,6 +892,12 @@ static void pico_key_down(int scancode, int keysym, int modifiers) {
 
       if( (ch=='h') && (modifiers == (WITH_CTRL + WITH_SHIFT)) ){
         id_menu = MENU_HELP;
+        is_menu = !(is_menu);
+        return; // do not add key to "Keyboard buffer"
+      }
+
+      if( (ch=='i') && (modifiers == (WITH_CTRL + WITH_SHIFT)) ){
+        id_menu = MENU_CREDENTIALS;
         is_menu = !(is_menu);
         return; // do not add key to "Keyboard buffer"
       }

@@ -150,11 +150,11 @@ void display_config(){
     sprintf(msg, "\x0E0  %sm ANSI Graphic (8bits)     \x0C2             \x0E0\r\n", (config.font_id > FONT_ASCII)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E8\x0C3 Terminal type \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0B1\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
-    sprintf(msg, "\x0E0  %st VT100/VT52 mode (Standard)             \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_VT100 || get_terminal_mode() == TERMINAL_MODE_VT52)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %st VT100/VT52 mode                        \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_VT100 || get_terminal_mode() == TERMINAL_MODE_VT52)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    sprintf(msg, "\x0E0  %su Televideo (TVI) mode                  \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %su Televideo (TVI) mode                   \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
-    sprintf(msg, "\x0E0  %sv Televideo (TVI) Spezialmodus          \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI_SPECIAL)?"\x0D1":" " );
+    sprintf(msg, "\x0E0  %sv Televideo (TVI) FSTTerm                \x0E0\r\n", (get_terminal_mode() == TERMINAL_MODE_TVI_SPECIAL)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E8\x0C3 ANSI Graphic font \x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0C3\x0E9\r\n", config.font_id );
     sprintf(msg, "\x0E0  %sp NupetSCII Mono8    %sq CP437 Mono8      \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_MONO8)?"\x0D1":" ", (config.graph_id==FONT_CP437_MONO8)?"\x0D1":" " );

@@ -750,11 +750,6 @@ void handle_new_character(unsigned char asc){
                     // ESC = <row+31> <col+31>
                     esc_state = ESC_TVI_ROW;
                 }
-                else if (mode==TERMINAL_MODE_TVI_SPECIAL && asc=='@' ){
-                    // Special TVI mode: ignore ESC @ ... sequences entirely.
-                    // Discard until a final byte is reached.
-                    esc_state = ESC_TVI_IGNORE_AT;
-                }
                 else
                     // unrecognised character after escape.
                     reset_escape_sequence();
@@ -835,7 +830,12 @@ void handle_new_character(unsigned char asc){
   }
   else {
       // === regular characters ==============================================
-      if(asc>=0x20 && asc<=0xFF){
+      if(mode==TERMINAL_MODE_TVI_SPECIAL && asc=='@'){
+          // Special TVI mode: ignore @ ... sequences entirely.
+          // Discard until a final byte is reached.
+          esc_state = ESC_TVI_IGNORE_AT;
+      }
+      else if(asc>=0x20 && asc<=0xFF){
 
           //if insert mode shift chars to the right
           if(insert_mode) insert_chars(1);

@@ -186,7 +186,6 @@ char handle_config_input(){
 
   // Store the config
   if ( _ch == 'S' ){
-    config.terminal_mode = get_terminal_mode();
     print_string( "\r\nWrite to flash! Will reboot in 2 seconds.");
     sleep_ms( 1000 );
     stop_core1(); // suspend rendering for race condition

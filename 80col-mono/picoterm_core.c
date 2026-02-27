@@ -135,10 +135,6 @@ void set_terminal_mode(int new_mode){
 
     // TVI special mode: keep cursor hidden.
     cursor_visible(mode != TERMINAL_MODE_TVI_SPECIAL);
-
-    // TVI special mode: keep cursor hidden.
-    cursor_visible(mode != TERMINAL_MODE_TVI);
-
     reset_escape_sequence();
 }
 
@@ -822,7 +818,9 @@ void handle_new_character(unsigned char asc){
               // If a new ESC appears, start a new sequence immediately.
               if(asc==0x1B)
                   esc_state = ESC_ESC_RECEIVED;
-              else if(asc>=0x40 && asc<=0x7E)
+              else if((asc>='0' && asc<='9') || asc==';')
+                  ; // still consuming parameters
+              else
                   reset_escape_sequence();
               break;
       }

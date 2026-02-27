@@ -24,7 +24,7 @@ const char * PICOTERM_LOGO[] = {
     "           N  A  C  H  R  I  C  H  T  E  N  T  E  C  H  N  I  K\r\n",
     "\r\n",
     "\r\n",
-    "               Terminalprogramm für DIKOS 210 SST und FST\r\n",
+    "               Terminalprogramm f\x0FCr DIKOS 210 SST und FST\r\n",
     "\r\n",
 	"\r\n",
     "---[ Hilfe: STRG+UMSCH+H ]----------------------------[ Info: STRG+UMSCH+I ]---\r\n",

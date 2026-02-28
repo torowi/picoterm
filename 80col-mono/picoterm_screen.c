@@ -162,7 +162,7 @@ void display_config(){
 		sprintf(msg, "\x0E0  %sr NupetSCII OlivettiT%ss CP437 OlivettiT  \x0E0\r\n", (config.graph_id==FONT_NUPETSCII_OLIVETTITHIN)?"\x0D1":" ", (config.graph_id==FONT_CP437_OLIVETTITHIN)?"\x0D1":" " );
     print_nupet(msg, config.font_id );
     print_nupet("\x0E5\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E1\x0E7\r\n", config.font_id );
-    print_string("\r\n(S upcase=save / t=VT / u=TVI / v=TVI+ / ESC=close) ? ");
+    print_string("\r\n(S upcase=save / ESC=close) ? ");
 
 
     cursor_visible(true);
@@ -368,31 +368,10 @@ void display_credentials(){
   move_cursor_home();
 
   print_nupet("\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6 Credentials / About \x0A6\x0A6\r\n", config.font_id );
-
+  print_string("bases on PicoTerm by \r\n"
   sprintf(msg, "PicoTerm %s\r\n", CMAKE_PROJECT_VERSION );
   print_string(msg);
-  sprintf(msg, "TinyUSB=%d.%d.%d\r\n", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
-  print_string(msg);
-  sprintf(msg, "Keymap=%s rev %d\r\n", KEYMAP, KEYMAP_REV );
-  print_string(msg);
-  sprintf(msg, "Charset=%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) );
-  print_string(msg);
-  sprintf(msg, "Terminal mode=%s\r\n", get_terminal_mode()==TERMINAL_MODE_TVI ? "TVI" : (get_terminal_mode()==TERMINAL_MODE_TVI_SPECIAL ? "TVI Spezial" : "VT100/VT52") );
-  print_string(msg);
-  sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
-  print_string(msg);
 
-  switch(config.parity){
-    case UART_PARITY_NONE:
-      _parity = 'N';
-      break;
-    case UART_PARITY_ODD:
-      _parity = 'O';
-      break;
-    case UART_PARITY_EVEN:
-      _parity = 'E';
-      break;
-  }
   sprintf(msg, "Serial: %i bds %i%c%i\r\n", config.baudrate, config.databits, _parity, config.stopbits );
   print_string(msg);
 
@@ -413,8 +392,31 @@ void display_terminal(){
     for( int i=0; i < LOGO_LINES; i++ ){
       print_string( (char *)PICOTERM_LOGO[i] );
     }
+	sprintf(msg, "TinyUSB=%d.%d.%d, ", TUSB_VERSION_MAJOR, TUSB_VERSION_MINOR,TUSB_VERSION_REVISION);
+    print_string(msg);
+    sprintf(msg, "Keymap=%s rev %d, ", KEYMAP, KEYMAP_REV );
+    print_string(msg);
+    sprintf(msg, "%s (%s)\r\n", config.font_id==FONT_ASCII ? "ASCII" : "ANSI", get_font_name(config.graph_id) ); // ANSI graphical font name in parenthesis
+    print_string(msg);
+    sprintf(msg, "Buzzer/USB-power on %s\r\n", i2c_bus_available==true ? "I2C" : "GPIO" );
+    print_string(msg);
+    char _parity = '?';
+    switch(config.parity){
+      case UART_PARITY_NONE:
+        _parity = 'N';
+        break;
+      case UART_PARITY_ODD:
+        _parity = 'O';
+        break;
+      case UART_PARITY_EVEN:
+        _parity = 'E';
+        break;
+    }
+	// Update "project(picoterm VERSION 1.1)" in CMakeList
+    sprintf(msg, "PicoTerm %s @ %i bds %i%c%i\r\n", CMAKE_PROJECT_VERSION, config.baudrate, config.databits, _parity, config.stopbits );
+    print_string(msg);
     print_string("\r\n");
-    snprintf(msg, sizeof(msg), "Press Shift+Ctrl+I for Credentials/About\r\n");
+    print_string("Press Shift+Ctrl+I for Credentials/About\r\n");
     print_string(msg);
 
 

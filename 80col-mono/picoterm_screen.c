@@ -368,12 +368,17 @@ void display_credentials(){
   move_cursor_home();
 
   print_nupet("\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6\x0A6 Credentials / About \x0A6\x0A6\r\n", config.font_id );
-  print_string("bases on PicoTerm by \r\n"
-  sprintf(msg, "PicoTerm %s\r\n", CMAKE_PROJECT_VERSION );
-  print_string(msg);
+  print_string("Originalprojekt: PicoTerm Version 1.6.0\r\n");
+  print_string("Autor: S. Dixon & D. Meurisse, 2023\r\n");
+  print_string("\r\n");
+  print_string("GitHub: github.com/RC2014Z80/picoterm\r\n");
 
-  sprintf(msg, "Serial: %i bds %i%c%i\r\n", config.baudrate, config.databits, _parity, config.stopbits );
-  print_string(msg);
+  print_string("\r\nWeiterentwicklung fuer DIKOS210:\r\n");
+  print_string("- Anschluss an SST Service-Schnittstelle\r\n");
+  print_string("  (Mode VT100)\r\n");
+  print_string("- Anschluss an FST\r\n");
+  print_string("  (Mode TVI Spezial)\r\n");
+  print_string("- Erweiterung um TeleVideo ESC-Sequenzen\r\n");
 
   print_string("\r\n(ESC=close) ? ");
   cursor_visible(true);

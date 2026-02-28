@@ -38,7 +38,9 @@
 #define ESC_PARAMETER_READY     2
 #define ESC_TVI_ROW             3
 #define ESC_TVI_COLUMN          4
-#define ESC_TVI_IGNORE_AT       5
+#define ESC_TVI_AT_WAIT_0F      5
+#define ESC_TVI_AT_WAIT_PARAM   6
+#define ESC_TVI_AT_WAIT_CR      7
 
 #define MAX_ESC_PARAMS          5
 static int esc_state = ESC_READY;
@@ -813,16 +815,28 @@ void handle_new_character(unsigned char asc){
               break;
           }
 
-          case ESC_TVI_IGNORE_AT:
-              // Ignore ESC @ ... sequence payload completely.
-              // If a new ESC appears, start a new sequence immediately.
-              if(asc==0x1B)
-                  esc_state = ESC_ESC_RECEIVED;
-              else if((asc>='0' && asc<='9') || asc==';')
-                  ; // still consuming parameters
+         case ESC_TVI_AT_WAIT_0F:
+              // Special TVI sequence after '@' is expected as:
+              // 0x40 0x0F 0xXX 0x0D
+              if(asc==0x0E || asc==0x0F)
+                  esc_state = ESC_TVI_AT_WAIT_PARAM;
               else
                   reset_escape_sequence();
               break;
+
+          case ESC_TVI_AT_WAIT_PARAM:
+              // Consume payload byte (0xXX)
+              esc_state = ESC_TVI_AT_WAIT_CR;
+              break;
+
+          case ESC_TVI_AT_WAIT_CR:
+              // End of special TVI sequence
+              if(asc==0x0D)
+                  reset_escape_sequence();
+              else
+                  reset_escape_sequence();
+              break;
+
       }
 
   }
@@ -831,7 +845,7 @@ void handle_new_character(unsigned char asc){
       if(mode==TERMINAL_MODE_TVI_SPECIAL && asc=='@'){
           // Special TVI mode: ignore @ ... sequences entirely.
           // Discard until a final byte is reached.
-          esc_state = ESC_TVI_IGNORE_AT;
+          esc_state = ESC_TVI_AT_WAIT_0F;
       }
       else if(asc>=0x20 && asc<=0xFF){
 
@@ -887,6 +901,11 @@ void handle_new_character(unsigned char asc){
 
   if(conio_config.cursor.state.blink_state)
     conio_config.cursor.state.blink_state = false;
+
+  // In TVI special mode cursor must stay hidden even if another path enabled it.
+  if(mode==TERMINAL_MODE_TVI_SPECIAL && conio_config.cursor.state.visible)
+    cursor_visible(false);
+
 }
 
 

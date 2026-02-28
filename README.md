@@ -102,7 +102,6 @@ The "RP2040 VGA Terminal" offers:
 | \ESC[?2l	| Enter VT52 mode                                                            | cursor_move_vt52   |
 | \ESC[?61l | Enter Televideo (TVI) mode                                               |                    |
 | \ESC[?61h | Leave Televideo mode and return to VT100                                 |                    |
-
 | \ESC[?7l	| Wraparound OFF                                                             | no_wrap            |
 | \ESC[?7h	| Wraparound ON                                                              | do_wrap            |
 | \ESC[?12l	| Text Cursor Disable Blinking (but still visible)                           | cursor_blink       |
